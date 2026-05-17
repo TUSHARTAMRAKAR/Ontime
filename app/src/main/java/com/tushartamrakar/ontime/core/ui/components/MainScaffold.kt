@@ -19,14 +19,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.tushartamrakar.ontime.core.ui.theme.Background
-import com.tushartamrakar.ontime.core.ui.theme.Border
 import com.tushartamrakar.ontime.core.ui.theme.Primary
 import com.tushartamrakar.ontime.core.ui.theme.Surface
 import com.tushartamrakar.ontime.core.ui.theme.TextMuted
-import com.tushartamrakar.ontime.core.ui.theme.TextPrimary
 import com.tushartamrakar.ontime.navigation.Screen
 
-// ─── Tab Item Data Class ──────────────────────────────────────────────────────
+// ─── Tab Item ─────────────────────────────────────────────────────────────────
 data class TabItem(
     val screen: Screen,
     val label: String,
@@ -75,9 +73,7 @@ fun MainScaffold(
                                 contentDescription = tab.label,
                             )
                         },
-                        label = {
-                            Text(text = tab.label)
-                        },
+                        label = { Text(text = tab.label) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Primary,
                             selectedTextColor = Primary,

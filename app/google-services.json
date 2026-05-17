@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "302595659091",
+    "project_id": "ontime-f45e7",
+    "storage_bucket": "ontime-f45e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302595659091:android:68d7d980a0dd5864027da6",
+        "android_client_info": {
+          "package_name": "com.tushartamrakar.ontime"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaTtPCAE9MiWQXjOwGeDuQpLdZkbHS3_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
