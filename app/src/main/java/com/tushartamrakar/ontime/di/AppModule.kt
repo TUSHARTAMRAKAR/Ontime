@@ -2,6 +2,7 @@ package com.tushartamrakar.ontime.di
 
 import android.content.Context
 import androidx.room.Room
+import com.google.firebase.auth.FirebaseAuth
 import com.tushartamrakar.ontime.alarm.data.local.AlarmDao
 import com.tushartamrakar.ontime.alarm.data.local.AlarmDatabase
 import com.tushartamrakar.ontime.alarm.domain.AlarmScheduler
@@ -43,5 +44,12 @@ object AppModule {
         @ApplicationContext context: Context,
     ): AlarmScheduler {
         return AlarmScheduler(context)
+    }
+
+    // ─── Firebase Auth ────────────────────────────────────────────────────────
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
     }
 }
