@@ -1,63 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ─── Permissions ─────────────────────────────────────────────────── -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <!-- ─── Existing permissions ──────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+
+    <!-- ─── Focus section permissions ────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
+    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+
+    <!-- ─── Usage stats (for Focus efficiency pill) ──────────────────────── -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- ─── Display Over Apps (alarm overlay on lock screen) ─────────────── -->
+
+    <!-- ─── Re-arm alarms after device reboot ────────────────────────────── -->
+
+    <!-- ─── Battery optimization exclusion ───────────────────────────────── -->
+    <!--
+        Keeps Ontime alive during Doze mode so alarms and timers never miss.
+        Google Play allows this for productivity / alarm-clock category apps.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!-- ─── Package visibility (Android 11+) ─────────────────────────────── -->
+    <queries>
+        <!-- Needed to launch home screen from FocusBlockerActivity -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
+    </queries>
 
     <application
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true"
         android:name=".MainApplication"
         android:allowBackup="true"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Ontime"
-        android:enableOnBackInvokedCallback="true">
+        android:theme="@style/Theme.Ontime">
 
-        <!-- ─── Main Activity ──────────────────────────────────────────── -->
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!--  EXISTING COMPONENTS                                            -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+
+        <!-- ─── Main Activity ─────────────────────────────────────────── -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true">
+            android:theme="@style/Theme.Ontime">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- ─── Alarm Ring Activity ────────────────────────────────────── -->
+        <!-- ─── Alarm Ring Activity ───────────────────────────────────── -->
         <activity
             android:name=".alarm.presentation.AlarmRingActivity"
             android:exported="false"
+            android:launchMode="singleInstance"
             android:showWhenLocked="true"
-            android:turnScreenOn="true"
-            android:excludeFromRecents="true"
-            android:taskAffinity=""
-            android:launchMode="singleInstance" />
+            android:turnScreenOn="true" />
 
-        <!-- ─── Alarm Service ──────────────────────────────────────────── -->
+        <!-- ─── Rise Check Activity ───────────────────────────────────── -->
+        <activity
+            android:name=".alarm.presentation.RiseCheckActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+
+        <!-- ─── Alarm Service ─────────────────────────────────────────── -->
         <service
             android:name=".alarm.service.AlarmService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
-        <!-- ─── Alarm Broadcast Receiver ──────────────────────────────── -->
+        <!-- ─── Rise Check Service ────────────────────────────────────── -->
+        <service
+            android:name=".alarm.service.RiseCheckService"
+            android:exported="false" />
+
+        <!-- ─── Alarm Receiver ────────────────────────────────────────── -->
         <receiver
             android:name=".alarm.receiver.AlarmReceiver"
             android:exported="false" />
+
+
+        <!-- ─── Home Screen Widget ────────────────────────────────────────── -->
+        <receiver
+            android:name=".widget.FocusWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_focus_info" />
+        </receiver>
 
         <!-- ─── Boot Receiver ─────────────────────────────────────────── -->
         <receiver
@@ -65,9 +136,185 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <!-- ─── Event Reminder Receiver ──────────────────────────────── -->
+        <receiver
+            android:name=".calendar.notification.EventReminderReceiver"
+            android:exported="false" />
+
+        <!-- ─── Period Reminder Receiver ─────────────────────────────── -->
+        <receiver
+            android:name=".period.notification.PeriodReminderReceiver"
+            android:exported="false" />
+
+        <!-- ─── Attendee Day-of Receiver ──────────────────────────────── -->
+        <receiver
+            android:name=".calendar.notification.AttendeeDayOfReceiver"
+            android:exported="false" />
+
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!--  FOCUS SECTION COMPONENTS                                       -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+
+        <!-- ─── Focus Timer Service ───────────────────────────────────── -->
+        <!--
+            Foreground service that keeps the Pomodoro timer running while
+            the screen is locked or the user switches apps.
+            Uses mediaPlayback type to support ambient sounds during sessions.
+        -->
+        <service
+            android:name=".focus.foreground.FocusTimerService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            android:stopWithTask="false" />
+
+        <!-- ─── Stopwatch Service ─────────────────────────────────────────── -->
+        <!--
+            Counts up from 0 while the user works freely without a set timer.
+            Session is saved as a completed WORK entry when stopped.
+            Uses mediaPlayback type so it can keep ambient sound running.
+        -->
+        <service
+            android:name=".focus.foreground.StopwatchService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            android:stopWithTask="false" />
+
+        <!-- ─── Adult Content VPN Service ────────────────────────────── -->
+        <!--
+            Local-only VPN that intercepts DNS queries on-device.
+            No user data leaves the device — only DNS port 53 is intercepted.
+            Blocks adult content domains using bundled blocklist.
+        -->
+        <service
+            android:name=".focus.blocker.AdultContentVpnService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
+        <!-- ─── Focus Blocker Overlay Activity ───────────────────────── -->
+        <!--
+            Full-screen overlay shown immediately when a blocked app is opened.
+            showWhenLocked + turnScreenOn ensures it works on lock screen too.
+            excludeFromRecents prevents it appearing in the recents drawer.
+        -->
+        <activity
+            android:name=".focus.blocker.FocusBlockerActivity"
+            android:enabled="true"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.Ontime" />
+
+        <!-- ─── Blocker Accessibility Service ────────────────────────── -->
+        <!--
+            Watches every TYPE_WINDOW_STATE_CHANGED event to detect when
+            a blocked app comes to the foreground. Immediately launches
+            FocusBlockerActivity as an overlay.
+            Always-on for adult content; focus-only for app blocking.
+        -->
+        <service
+            android:name=".focus.blocker.BlockerAccessibilityService"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Ontime Focus Blocker"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- ─── Device Admin Receiver ────────────────────────────────── -->
+        <!--
+            Registers Ontime as a Device Admin.
+            Sole purpose: adds a friction step to uninstall while
+            the adult content filter is active.
+            No dangerous device admin policies are declared.
+        -->
+        <receiver
+            android:name=".focus.blocker.FocusDeviceAdminReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_policies" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ─── Distractions Broadcast Receiver ──────────────────────── -->
+        <!--
+            Internal bridge: BlockerAccessibilityService → FocusTimerService.
+            Receives INCREMENT_DISTRACTIONS broadcast and forwards it to
+            the timer service to update the distraction counter.
+            Internal only — android:exported="false".
+        -->
+        <receiver
+            android:name=".focus.blocker.DistractionsReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.tushartamrakar.ontime.focus.INCREMENT_DISTRACTIONS" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ─── Device Admin — makes app undeletable when user activates ── -->
+        <receiver
+            android:name=".focus.admin.OntimeDeviceAdminReceiver"
+            android:description="@string/device_admin_description"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ─── Accessibility Service — blocks apps + detects power menu ── -->
+        <service
+            android:name=".focus.accessibility.OntimeFocusAccessibilityService"
+            android:exported="true"
+            android:label="Ontime Focus Guard"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- ─── Alarm Overlay Service — shows dismiss UI over lock screen ─ -->
+        <service
+            android:name=".focus.overlay.AlarmOverlayService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            android:stopWithTask="false" />
+
+        <!-- ─── Boot Completed — handled by alarm/receiver/BootReceiver ──────── -->
+        <!-- BootReceiver already registered and re-arms alarm clocks,           -->
+        <!-- calendar reminders, and period reminders on every reboot.           -->
+        <!-- No second receiver needed here.                                     -->
 
     </application>
 

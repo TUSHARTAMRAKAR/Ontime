@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ontime — Your all-in-one premium productivity companion. Smart alarms, focus timer, app blocker, calendar, period tracker and more. Free Android app.">
+  <meta property="og:title" content="Ontime — Premium Productivity App">
+  <meta property="og:description" content="Smart alarms, Pomodoro focus sessions, app blocker, calendar sync — all in one beautiful Android app.">
+  <meta property="og:url" content="https://tushartamrakar.github.io/Ontime">
+  <title>Ontime — Premium Productivity App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary:       #7C3AED;
+      --primary-dark:  #6D28D9;
+      --primary-light: #8B5CF6;
+      --accent:        #EC4899;
+      --success:       #10B981;
+      --warning:       #F59E0B;
+      --bg:            #0A0A0F;
+      --surface:       #1A1A2E;
+      --surface-high:  #252540;
+      --text:          #F8FAFC;
+      --text-sec:      #94A3B8;
+      --text-muted:    #475569;
+      --border:        #1E1E3A;
+      --glow:          rgba(124,58,237,0.35);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Mulish', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ── Stars background ───────────────────────────────────────────────── */
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute; border-radius: 50%;
+      background: white; animation: twinkle linear infinite;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity:0.1; transform:scale(1); }
+      50%      { opacity:0.9; transform:scale(1.4); }
+    }
+
+    /* ── Glow orbs ──────────────────────────────────────────────────────── */
+    .orb {
+      position: fixed; border-radius: 50%; filter: blur(80px);
+      pointer-events: none; z-index: 0;
+    }
+    .orb-1 { width:500px; height:500px; background:rgba(124,58,237,0.18); top:-150px; right:-100px; }
+    .orb-2 { width:400px; height:400px; background:rgba(236,72,153,0.12); bottom:-100px; left:-100px; }
+    .orb-3 { width:300px; height:300px; background:rgba(124,58,237,0.10); top:50%; left:50%; transform:translate(-50%,-50%); }
+
+    /* ── Navbar ─────────────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top:0; left:0; right:0; z-index: 1000;
+      padding: 16px 40px;
+      display: flex; align-items:center; justify-content:space-between;
+      backdrop-filter: blur(20px);
+      background: rgba(10,10,15,0.7);
+      border-bottom: 1px solid rgba(124,58,237,0.12);
+      transition: all .3s;
+    }
+    .nav-logo {
+      font-size: 22px; font-weight: 900; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #7C3AED, #EC4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; text-decoration: none;
+    }
+    .nav-links { display:flex; gap:32px; align-items:center; }
+    .nav-links a {
+      color: var(--text-sec); text-decoration:none; font-weight:600;
+      font-size:14px; transition:color .2s;
+    }
+    .nav-links a:hover { color:var(--text); }
+    .nav-btn {
+      background: var(--primary); color:white; padding:9px 22px;
+      border-radius:50px; font-weight:800; font-size:13px;
+      text-decoration:none; transition:all .2s; letter-spacing:0.3px;
+      box-shadow: 0 0 20px rgba(124,58,237,0.4);
+    }
+    .nav-btn:hover { background:var(--primary-light); transform:translateY(-1px); box-shadow:0 4px 30px rgba(124,58,237,0.5); }
+
+    /* ── Sections base ──────────────────────────────────────────────────── */
+    section { position:relative; z-index:1; }
+    .container { max-width:1100px; margin:0 auto; padding:0 24px; }
+
+    /* ── HERO ───────────────────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items:center;
+      padding: 120px 0 80px;
+    }
+    .hero-inner {
+      display: grid; grid-template-columns:1fr 1fr;
+      gap:60px; align-items:center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items:center; gap:8px;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 50px; padding: 6px 16px;
+      font-size: 11px; font-weight:800; color:var(--primary-light);
+      letter-spacing:1.2px; margin-bottom:24px;
+    }
+    .badge-dot {
+      width:7px; height:7px; border-radius:50%;
+      background:var(--primary-light);
+      animation: pulseDot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+    .hero-h1 {
+      font-size: clamp(36px, 5vw, 62px);
+      font-weight: 900; line-height: 1.1; letter-spacing:-1.5px;
+      margin-bottom: 20px;
+    }
+    .grad-text {
+      background: linear-gradient(135deg, #7C3AED 0%, #EC4899 50%, #7C3AED 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color:transparent;
+      background-clip: text;
+      animation: shimmer 4s linear infinite;
+    }
+    @keyframes shimmer { 0%{background-position:0% center} 100%{background-position:200% center} }
+    .hero-p {
+      font-size: 17px; color:var(--text-sec); margin-bottom:36px;
+      max-width:480px; line-height:1.7;
+    }
+    .hero-btns { display:flex; gap:14px; flex-wrap:wrap; }
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color:white; padding:14px 30px; border-radius:50px;
+      font-weight:800; font-size:15px; text-decoration:none;
+      box-shadow: 0 0 40px rgba(124,58,237,0.45);
+      transition: all .25s; letter-spacing:0.3px;
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 40px rgba(124,58,237,0.55); }
+    .btn-secondary {
+      display:inline-flex; align-items:center; gap:10px;
+      background:transparent; color:var(--text); padding:14px 30px;
+      border:1px solid var(--border); border-radius:50px;
+      font-weight:700; font-size:15px; text-decoration:none;
+      transition:all .25s;
+    }
+    .btn-secondary:hover { border-color:var(--primary); color:var(--primary-light); background:rgba(124,58,237,0.05); }
+    .hero-note {
+      margin-top:16px; font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:6px;
+    }
+    .hero-note span { color:var(--warning); }
+
+    /* ── Phone mockup ───────────────────────────────────────────────────── */
+    .phone-wrap {
+      display:flex; justify-content:center; align-items:center;
+      position:relative;
+    }
+    .phone-glow {
+      position:absolute; width:280px; height:500px; border-radius:48px;
+      background: radial-gradient(ellipse, rgba(124,58,237,0.4), transparent 70%);
+      filter: blur(30px); animation:floatGlow 4s ease-in-out infinite;
+    }
+    @keyframes floatGlow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    .phone {
+      width:230px; position:relative;
+      border-radius:44px; padding:12px;
+      background: linear-gradient(145deg, #252540, #1A1A2E);
+      border: 2px solid rgba(124,58,237,0.25);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
+      animation: floatPhone 4s ease-in-out infinite;
+    }
+    @keyframes floatPhone { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-14px) rotate(1deg)} }
+    .phone-screen {
+      background: var(--bg); border-radius:34px; overflow:hidden;
+      height:460px; position:relative;
+    }
+    /* Notch */
+    .phone-notch {
+      position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:80px; height:20px; background:var(--bg);
+      border-bottom-left-radius:16px; border-bottom-right-radius:16px;
+      z-index:10;
+    }
+    /* Fake status bar */
+    .phone-status {
+      display:flex; justify-content:space-between; padding:26px 18px 8px;
+      font-size:9px; font-weight:800; color:var(--text-sec);
+    }
+    /* Focus screen simulation */
+    .phone-body { padding:0 12px; }
+    .phone-header { text-align:center; margin-bottom:8px; }
+    .phone-title { font-size:13px; font-weight:900; color:var(--text); }
+    .timer-ring-wrap {
+      display:flex; justify-content:center; margin:8px 0;
+    }
+    .timer-ring-svg { width:130px; height:130px; transform:rotate(-90deg); }
+    .timer-track { fill:none; stroke:var(--border); stroke-width:8; }
+    .timer-progress {
+      fill:none; stroke:var(--primary); stroke-width:8;
+      stroke-linecap:round;
+      stroke-dasharray:339; stroke-dashoffset:85;
+      animation:progressAnim 3s ease-in-out infinite alternate;
+    }
+    @keyframes progressAnim { from{stroke-dashoffset:280} to{stroke-dashoffset:60} }
+    .timer-center {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      text-align:center;
+    }
+    .timer-phase { font-size:7px; font-weight:800; color:var(--primary-light); letter-spacing:2px; }
+    .timer-time { font-size:20px; font-weight:900; color:var(--text); letter-spacing:-1px; }
+    .phone-ring-wrap { position:relative; width:130px; height:130px; }
+    .phone-sound-row {
+      display:flex; gap:5px; margin:6px 0; overflow:hidden;
+    }
+    .sound-chip {
+      padding:4px 8px; border-radius:20px; font-size:7px; font-weight:800;
+      background:var(--surface-high); color:var(--text-sec); white-space:nowrap;
+      border:1px solid var(--border);
+    }
+    .sound-chip.active { background:rgba(124,58,237,0.2); color:var(--primary-light); border-color:rgba(124,58,237,0.4); }
+    .phone-start-btn {
+      background:linear-gradient(135deg,var(--primary),var(--primary-light));
+      border-radius:20px; padding:8px; text-align:center;
+      font-size:9px; font-weight:900; color:white; letter-spacing:0.5px;
+      margin:6px 0; box-shadow:0 4px 20px rgba(124,58,237,0.4);
+    }
+    /* Nav bar */
+    .phone-nav {
+      display:flex; justify-content:space-around; padding:8px 0;
+      border-top:1px solid var(--border); position:absolute;
+      bottom:0; left:0; right:0; background:var(--surface);
+      border-bottom-left-radius:34px; border-bottom-right-radius:34px;
+    }
+    .phone-nav-item { font-size:16px; text-align:center; }
+    .phone-nav-item.active { font-size:14px; color:var(--primary); }
+
+    /* ── Stats strip ────────────────────────────────────────────────────── */
+    .stats-strip {
+      background: linear-gradient(90deg, rgba(124,58,237,0.08), rgba(236,72,153,0.06), rgba(124,58,237,0.08));
+      border-top: 1px solid rgba(124,58,237,0.15);
+      border-bottom: 1px solid rgba(124,58,237,0.15);
+      padding: 28px 0;
+    }
+    .stats-grid {
+      display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px;
+    }
+    .stat-item { text-align:center; }
+    .stat-num {
+      font-size:32px; font-weight:900;
+      background:linear-gradient(135deg,var(--primary),var(--primary-light));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .stat-label { font-size:12px; font-weight:700; color:var(--text-sec); margin-top:2px; }
+
+    /* ── Features ───────────────────────────────────────────────────────── */
+    #features { padding: 100px 0; }
+    .section-eyebrow {
+      font-size:11px; font-weight:800; color:var(--primary-light);
+      letter-spacing:2px; text-align:center; margin-bottom:12px;
+    }
+    .section-h2 {
+      font-size:clamp(28px,4vw,44px); font-weight:900; text-align:center;
+      line-height:1.15; margin-bottom:14px; letter-spacing:-0.8px;
+    }
+    .section-sub {
+      font-size:16px; color:var(--text-sec); text-align:center;
+      max-width:520px; margin:0 auto 60px;
+    }
+    .features-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
+    }
+    .feature-card {
+      background:rgba(26,26,46,0.7); border:1px solid var(--border);
+      border-radius:20px; padding:28px 24px;
+      backdrop-filter:blur(20px);
+      transition:all .3s;
+      opacity:0; transform:translateY(30px);
+    }
+    .feature-card.visible { opacity:1; transform:translateY(0); }
+    .feature-card:hover {
+      border-color:rgba(124,58,237,0.35);
+      box-shadow:0 8px 40px rgba(124,58,237,0.15);
+      transform:translateY(-4px);
+    }
+    .feature-icon {
+      font-size:36px; margin-bottom:16px; display:block;
+    }
+    .feature-title { font-size:17px; font-weight:800; margin-bottom:8px; }
+    .feature-desc { font-size:13px; color:var(--text-sec); line-height:1.6; }
+    .feature-tag {
+      display:inline-block; margin-top:12px; padding:3px 10px;
+      border-radius:20px; font-size:9px; font-weight:800;
+      background:rgba(124,58,237,0.12); color:var(--primary-light);
+      letter-spacing:0.8px;
+    }
+
+    /* ── How to Install ─────────────────────────────────────────────────── */
+    #install { padding:80px 0; }
+    .install-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:20px;
+      margin-top:50px;
+    }
+    .install-step {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:18px; padding:24px 20px; text-align:center;
+      position:relative;
+      opacity:0; transform:translateY(20px);
+      transition:all .4s;
+    }
+    .install-step.visible { opacity:1; transform:translateY(0); }
+    .step-num {
+      width:40px; height:40px; border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; font-weight:900; margin:0 auto 16px;
+      box-shadow:0 0 20px var(--glow);
+    }
+    .step-icon { font-size:28px; margin-bottom:12px; display:block; }
+    .step-title { font-size:14px; font-weight:800; margin-bottom:6px; }
+    .step-desc { font-size:12px; color:var(--text-sec); line-height:1.5; }
+    .step-arrow {
+      position:absolute; right:-14px; top:50%; transform:translateY(-50%);
+      color:var(--primary); font-size:20px; font-weight:900; z-index:2;
+    }
+
+    /* ── Download ───────────────────────────────────────────────────────── */
+    #download {
+      padding:80px 0 100px;
+    }
+    .download-card {
+      background:linear-gradient(135deg, rgba(124,58,237,0.15), rgba(236,72,153,0.08));
+      border:1px solid rgba(124,58,237,0.25);
+      border-radius:28px; padding:60px 40px;
+      text-align:center;
+      backdrop-filter:blur(20px);
+      position:relative; overflow:hidden;
+    }
+    .download-card::before {
+      content:''; position:absolute; top:-50%; left:-50%;
+      width:200%; height:200%;
+      background:radial-gradient(ellipse at center, rgba(124,58,237,0.08), transparent 60%);
+      animation:rotateBg 20s linear infinite;
+    }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .download-card > * { position:relative; z-index:1; }
+    .download-h2 { font-size:clamp(28px,4vw,40px); font-weight:900; margin-bottom:14px; }
+    .download-sub { font-size:16px; color:var(--text-sec); margin-bottom:36px; max-width:480px; margin-left:auto; margin-right:auto; }
+    .download-btns { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-bottom:30px; }
+    .download-btn {
+      display:inline-flex; align-items:center; gap:12px;
+      padding:16px 36px; border-radius:50px; font-weight:800;
+      font-size:16px; text-decoration:none; transition:all .25s;
+    }
+    .download-btn.primary {
+      background:linear-gradient(135deg,var(--primary),var(--primary-light));
+      color:white; box-shadow:0 0 50px rgba(124,58,237,0.5);
+    }
+    .download-btn.primary:hover { transform:translateY(-3px); box-shadow:0 8px 50px rgba(124,58,237,0.6); }
+    .download-btn.secondary {
+      background:transparent; color:var(--text);
+      border:2px solid var(--border);
+    }
+    .download-btn.secondary:hover { border-color:var(--primary); color:var(--primary-light); }
+    .download-note {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2);
+      border-radius:50px; padding:8px 18px;
+      font-size:12px; font-weight:700; color:var(--warning);
+    }
+    .req-list {
+      display:flex; justify-content:center; gap:24px; margin-top:20px;
+      flex-wrap:wrap;
+    }
+    .req-item { font-size:12px; color:var(--text-muted); font-weight:600; }
+    .req-item::before { content:"✓ "; color:var(--success); }
+
+    /* ── Developer ──────────────────────────────────────────────────────── */
+    #developer { padding:80px 0 100px; }
+    .dev-card {
+      background:rgba(26,26,46,0.8); border:1px solid rgba(124,58,237,0.2);
+      border-radius:28px; padding:48px; backdrop-filter:blur(20px);
+      display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center;
+    }
+    .dev-avatar-wrap { position:relative; }
+    .dev-avatar-glow {
+      position:absolute; inset:-20px;
+      background:radial-gradient(ellipse, rgba(124,58,237,0.3), transparent 70%);
+      border-radius:50%; filter:blur(20px);
+      animation:floatGlow 4s ease-in-out infinite;
+    }
+    .dev-avatar {
+      width:100px; height:100px; border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      display:flex; align-items:center; justify-content:center;
+      font-size:36px; font-weight:900; color:white;
+      position:relative; margin-bottom:20px;
+      border:3px solid rgba(124,58,237,0.4);
+      box-shadow:0 0 40px rgba(124,58,237,0.4);
+    }
+    .dev-name { font-size:24px; font-weight:900; margin-bottom:4px; }
+    .dev-role { font-size:13px; color:var(--text-sec); font-weight:600; margin-bottom:16px; }
+    .dev-links { display:flex; gap:10px; flex-wrap:wrap; }
+    .dev-link {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 14px; border-radius:50px; font-size:12px; font-weight:700;
+      text-decoration:none; transition:all .2s;
+      border:1px solid var(--border); color:var(--text-sec);
+    }
+    .dev-link:hover { border-color:var(--primary); color:var(--primary-light); background:rgba(124,58,237,0.08); }
+    .dev-story h3 { font-size:20px; font-weight:900; margin-bottom:12px; }
+    .dev-story p { font-size:14px; color:var(--text-sec); line-height:1.7; margin-bottom:20px; }
+    .dedication-card {
+      background:linear-gradient(135deg, rgba(124,58,237,0.08), rgba(236,72,153,0.06));
+      border:1px solid rgba(124,58,237,0.18);
+      border-radius:16px; padding:20px;
+    }
+    .dedication-card h4 {
+      font-size:13px; font-weight:900; margin-bottom:12px; color:var(--text);
+    }
+    .dedication-line {
+      font-size:12px; color:var(--text-sec); line-height:1.6; margin-bottom:8px;
+      padding-left:12px; border-left:2px solid rgba(124,58,237,0.4);
+    }
+    .dedication-quote {
+      margin-top:12px; font-size:12px; font-style:italic;
+      color:var(--primary-light); font-weight:700; text-align:center;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────────────────── */
+    footer {
+      border-top:1px solid var(--border);
+      padding:40px 0; text-align:center;
+      position:relative; z-index:1;
+    }
+    .footer-logo {
+      font-size:20px; font-weight:900;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text; margin-bottom:12px; display:block;
+    }
+    .footer-links { display:flex; justify-content:center; gap:24px; margin-bottom:16px; }
+    .footer-links a {
+      font-size:12px; color:var(--text-muted); text-decoration:none; font-weight:600;
+      transition:color .2s;
+    }
+    .footer-links a:hover { color:var(--primary-light); }
+    .footer-copy { font-size:11px; color:var(--text-muted); }
+    .footer-love {
+      margin-top:8px; font-size:12px; font-weight:800;
+    }
+    .footer-love .name-anim {
+      background:linear-gradient(90deg,var(--primary),var(--accent),var(--primary));
+      background-size:200% auto;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation:shimmer 3s linear infinite;
+    }
+
+    /* ── Scroll-reveal ──────────────────────────────────────────────────── */
+    .reveal { opacity:0; transform:translateY(30px); transition:all .6s; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* ── Responsive ─────────────────────────────────────────────────────── */
+    @media(max-width:768px) {
+      nav { padding:14px 20px; }
+      .nav-links a { display:none; }
+      .hero-inner { grid-template-columns:1fr; text-align:center; }
+      .hero-p { margin:0 auto 36px; }
+      .hero-btns { justify-content:center; }
+      .hero-note { justify-content:center; }
+      .phone-wrap { order:-1; }
+      .features-grid { grid-template-columns:1fr; }
+      .install-grid { grid-template-columns:1fr 1fr; }
+      .step-arrow { display:none; }
+      .dev-card { grid-template-columns:1fr; text-align:center; }
+      .dev-links { justify-content:center; }
+      .footer-links { flex-wrap:wrap; gap:16px; }
+    }
+    @media(max-width:480px) {
+      .install-grid { grid-template-columns:1fr; }
+      .features-grid { grid-template-columns:1fr; }
+      .download-btns { flex-direction:column; align-items:center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars background -->
+<div class="stars" id="stars"></div>
+
+<!-- Glow orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+<nav>
+  <a class="nav-logo" href="#">⏰ ONTIME</a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#install">Install</a>
+    <a href="#developer">Developer</a>
+    <a href="https://github.com/TUSHARTAMRAKAR/Ontime" target="_blank">GitHub</a>
+    <a class="nav-btn" href="https://github.com/TUSHARTAMRAKAR/Ontime/releases/latest">⬇ Download</a>
+  </div>
+</nav>
+
+<!-- ── Hero ────────────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <!-- Left: Text -->
+      <div class="hero-text">
+        <div class="hero-badge">
+          <div class="badge-dot"></div>
+          PUBLIC BETA v0.1.0 — NOW AVAILABLE
+        </div>
+        <h1 class="hero-h1">
+          Your Ultimate<br>
+          <span class="grad-text">Productivity</span><br>
+          Companion
+        </h1>
+        <p class="hero-p">
+          Smart alarms that wake you gently, Pomodoro focus sessions that keep you in flow, a built-in app blocker, calendar sync, period tracking — all beautifully crafted in one free app.
+        </p>
+        <div class="hero-btns">
+          <a class="btn-primary" href="https://github.com/TUSHARTAMRAKAR/Ontime/releases/latest">
+            ⬇&nbsp; Download APK
+          </a>
+          <a class="btn-secondary" href="https://github.com/TUSHARTAMRAKAR/Ontime" target="_blank">
+            ★&nbsp; View on GitHub
+          </a>
+        </div>
+        <div class="hero-note">
+          <span>⚠</span> Requires enabling "Install from Unknown Sources" once
+        </div>
+      </div>
+
+      <!-- Right: Phone mockup -->
+      <div class="phone-wrap">
+        <div class="phone-glow"></div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="phone-status">
+              <span>9:41</span><span>●●●</span>
+            </div>
+            <div class="phone-body">
+              <div class="phone-header">
+                <div class="phone-title">Focus</div>
+              </div>
+              <div class="timer-ring-wrap">
+                <div class="phone-ring-wrap">
+                  <svg class="timer-ring-svg" viewBox="0 0 130 130">
+                    <circle class="timer-track" cx="65" cy="65" r="54"/>
+                    <circle class="timer-progress" cx="65" cy="65" r="54"/>
+                  </svg>
+                  <div class="timer-center">
+                    <div class="timer-phase">FOCUS</div>
+                    <div class="timer-time">25:00</div>
+                  </div>
+                </div>
+              </div>
+              <div class="phone-sound-row">
+                <div class="sound-chip active">🌧 Rain</div>
+                <div class="sound-chip">☁ White</div>
+                <div class="sound-chip">🌿 Forest</div>
+              </div>
+              <div class="phone-start-btn">▶ Start Focus Now</div>
+            </div>
+            <div class="phone-nav">
+              <div class="phone-nav-item">⏰</div>
+              <div class="phone-nav-item">📅</div>
+              <div class="phone-nav-item active">🎯</div>
+              <div class="phone-nav-item">⚙️</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats strip ──────────────────────────────────────────────────────── -->
+<div class="stats-strip">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item"><div class="stat-num">6+</div><div class="stat-label">CORE SECTIONS</div></div>
+      <div class="stat-item"><div class="stat-num">30+</div><div class="stat-label">FEATURES</div></div>
+      <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">ADS EVER</div></div>
+      <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">FREE</div></div>
+      <div class="stat-item"><div class="stat-num">∞</div><div class="stat-label">CLOUD SYNC</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Features ─────────────────────────────────────────────────────────── -->
+<section id="features">
+  <div class="container">
+    <div class="section-eyebrow">EVERYTHING YOU NEED</div>
+    <h2 class="section-h2">One App.<br><span class="grad-text">Six Superpowers.</span></h2>
+    <p class="section-sub">From waking up smart to staying focused and tracking your health — Ontime covers your entire day.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">⏰</span>
+        <div class="feature-title">Smart Alarms</div>
+        <div class="feature-desc">Gentle Wake, Text-to-Speech time announcements, Weather Reminders, Extra Loud mode, progressive snooze, and full cloud sync to never miss a beat.</div>
+        <span class="feature-tag">FULLY FEATURED</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎯</span>
+        <div class="feature-title">Focus Timer</div>
+        <div class="feature-desc">Pomodoro, Stopwatch, or Custom intervals. Ambient sounds (Rain, Forest, Café), streak tracking, app blocking, and usage statistics.</div>
+        <span class="feature-tag">POMODORO PRO</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title">App Blocker</div>
+        <div class="feature-desc">Block distracting apps during focus sessions. Adult content DNS-proxy filter. Device Admin protection. Fully offline, nothing leaves your device.</div>
+        <span class="feature-tag">PRIVACY FIRST</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📅</span>
+        <div class="feature-title">Smart Calendar</div>
+        <div class="feature-desc">Google Calendar sync, holiday overlays, event reminders, SMS invites, attendee management, and a beautiful month/week/day view.</div>
+        <span class="feature-tag">GOOGLE SYNC</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🌸</span>
+        <div class="feature-title">Period Tracker</div>
+        <div class="feature-desc">Private cycle tracking with symptom logging, mood tracking, predictions, and reminders. 100% offline — your health data never leaves your device.</div>
+        <span class="feature-tag">OFFLINE ONLY</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">☁️</span>
+        <div class="feature-title">Cloud Sync</div>
+        <div class="feature-desc">Your alarms sync automatically to your Google account via Firebase. Install on a new phone, sign in, and everything is instantly restored.</div>
+        <span class="feature-tag">FIREBASE POWERED</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How to Install ───────────────────────────────────────────────────── -->
+<section id="install">
+  <div class="container">
+    <div class="section-eyebrow">SIMPLE SETUP</div>
+    <h2 class="section-h2">Install in <span class="grad-text">4 Steps</span></h2>
+    <p class="section-sub">No Play Store needed. Direct download, fully free, always.</p>
+    <div class="install-grid">
+      <div class="install-step">
+        <div class="step-num">1</div>
+        <span class="step-icon">⬇️</span>
+        <div class="step-title">Download APK</div>
+        <div class="step-desc">Tap the "Download APK" button above. The file will download to your phone.</div>
+        <div class="step-arrow">›</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">2</div>
+        <span class="step-icon">🔓</span>
+        <div class="step-title">Allow Unknown Sources</div>
+        <div class="step-desc">When prompted, tap "Settings" and enable "Install from this source" for your browser.</div>
+        <div class="step-arrow">›</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">3</div>
+        <span class="step-icon">📲</span>
+        <div class="step-title">Install & Open</div>
+        <div class="step-desc">Tap "Install" when prompted. Open Ontime and sign in with your Google account.</div>
+        <div class="step-arrow">›</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">4</div>
+        <span class="step-icon">🚀</span>
+        <div class="step-title">You're Productive!</div>
+        <div class="step-desc">Set your first alarm, start a focus session, and enjoy your new productivity superpower.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Download CTA ─────────────────────────────────────────────────────── -->
+<section id="download">
+  <div class="container">
+    <div class="download-card reveal">
+      <div class="section-eyebrow" style="margin-bottom:16px">FREE FOREVER</div>
+      <h2 class="download-h2">Ready to be <span class="grad-text">Unstoppable?</span></h2>
+      <p class="download-sub">Download Ontime Public Beta today. No Play Store, no payment, no catch.</p>
+      <div class="download-btns">
+        <a class="download-btn primary" href="https://github.com/TUSHARTAMRAKAR/Ontime/releases/latest">
+          ⬇&nbsp; Download APK — Free
+        </a>
+        <a class="download-btn secondary" href="https://github.com/TUSHARTAMRAKAR/Ontime" target="_blank">
+          ★&nbsp; Star on GitHub
+        </a>
+      </div>
+      <div class="download-note">⚠ You may need to enable "Install from Unknown Sources" once</div>
+      <div class="req-list">
+        <span class="req-item">Android 8.0+</span>
+        <span class="req-item">50MB storage</span>
+        <span class="req-item">Google account (optional)</span>
+        <span class="req-item">No root required</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Developer ────────────────────────────────────────────────────────── -->
+<section id="developer">
+  <div class="container">
+    <div class="section-eyebrow">THE MAKER</div>
+    <h2 class="section-h2" style="margin-bottom:48px">Built with <span class="grad-text">Love & Purpose</span></h2>
+    <div class="dev-card reveal">
+      <!-- Left: Avatar + links -->
+      <div>
+        <div class="dev-avatar-wrap">
+          <div class="dev-avatar-glow"></div>
+          <div class="dev-avatar">TT</div>
+        </div>
+        <div class="dev-name">Tushar Tamrakar</div>
+        <div class="dev-role">Android Developer · Creator of Ontime<br>📍 Raipur, Chhattisgarh, India</div>
+        <div class="dev-links">
+          <a class="dev-link" href="https://github.com/TUSHARTAMRAKAR" target="_blank">🐙 GitHub</a>
+          <a class="dev-link" href="mailto:tushartamrakar2003@gmail.com">✉ Email</a>
+          <a class="dev-link" href="https://github.com/TUSHARTAMRAKAR/Ontime" target="_blank">⭐ Star Ontime</a>
+        </div>
+      </div>
+      <!-- Right: Story + Dedication -->
+      <div class="dev-story">
+        <h3>The Story 🌟</h3>
+        <p>Ontime was born from a simple frustration — no single app did everything I needed. Smart alarms, real focus sessions, a calendar I could trust, and health tracking, all beautifully unified. So I built it myself, from the ground up, in Kotlin and Jetpack Compose.</p>
+        <p>Every feature solves a real problem I personally faced. Ontime is my love letter to productivity.</p>
+        <div class="dedication-card">
+          <h4>🙏 With Gratitude</h4>
+          <p class="dedication-line"><strong>My Parents</strong> — Your prayers, strength, and unconditional love are the foundation of everything I do. Every line of code carries your blessing.</p>
+          <p class="dedication-line"><strong>My Wife Pooja</strong> — Thank you for your patience through every late night, your encouragement when I doubted myself, and your love that makes every milestone feel complete.</p>
+          <p class="dedication-quote">"This app is as much yours as it is mine." ❤️</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ───────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <span class="footer-logo">⏰ ONTIME</span>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#install">How to Install</a>
+      <a href="#download">Download</a>
+      <a href="https://github.com/TUSHARTAMRAKAR/Ontime" target="_blank">GitHub</a>
+      <a href="https://github.com/TUSHARTAMRAKAR/Ontime/issues" target="_blank">Report a Bug</a>
+    </div>
+    <div class="footer-copy">Public Beta v0.1.0 · © 2026 Tushar Tamrakar · All Rights Reserved</div>
+    <div class="footer-love">
+      Made With ❤️ By <span class="name-anim">TUSHAR TAMRAKAR</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ── Generate stars ─────────────────────────────────────────────────────
+  (function(){
+    const container = document.getElementById('stars');
+    for(let i = 0; i < 120; i++){
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2.5 + 0.5;
+      s.style.cssText = `
+        width:${size}px; height:${size}px;
+        left:${Math.random()*100}%;
+        top:${Math.random()*100}%;
+        animation-duration:${Math.random()*4+2}s;
+        animation-delay:${Math.random()*5}s;
+      `;
+      container.appendChild(s);
+    }
+  })();
+
+  // ── Scroll reveal ──────────────────────────────────────────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if(e.isIntersecting){
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.feature-card, .install-step, .reveal').forEach(el => observer.observe(el));
+
+  // ── Navbar scroll effect ───────────────────────────────────────────────
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    nav.style.background = window.scrollY > 40
+      ? 'rgba(10,10,15,0.95)'
+      : 'rgba(10,10,15,0.7)';
+  });
+</script>
+</body>
+</html>

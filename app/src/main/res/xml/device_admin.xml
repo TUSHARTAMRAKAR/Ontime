@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Device Admin policy for Ontime.
+    Being registered as a device admin automatically prevents uninstallation.
+    The user must first remove admin access via Settings → Security → Device Admins
+    before they can uninstall the app — making Ontime truly commitment-proof.
+-->
+<device-admin>
+    <uses-policies>
+        <!-- No extra policies needed — uninstall protection is built into device admin -->
+    </uses-policies>
+</device-admin>

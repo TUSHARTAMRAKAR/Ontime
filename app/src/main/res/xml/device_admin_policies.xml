@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Device admin policies for FocusDeviceAdminReceiver.
+
+    Place this file at:
+    app/src/main/res/xml/device_admin_policies.xml
+
+    Referenced in AndroidManifest.xml:
+    <meta-data
+        android:name="android.app.device_admin"
+        android:resource="@xml/device_admin_policies" />
+
+    We only declare the policy without requesting any dangerous capabilities.
+    The sole purpose of device admin is to prevent easy uninstall while
+    the adult content filter is active (adds a friction step for the user).
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <!--
+            No policies declared — we don't need any.
+            Device admin status alone prevents easy uninstall.
+            The user must go to Settings → Security → Device Admins
+            → Deactivate Ontime before they can uninstall.
+        -->
+    </uses-policies>
+</device-admin>

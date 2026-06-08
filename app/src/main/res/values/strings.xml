@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Ontime</string>
+    <string name="device_admin_description">Prevents Ontime from being uninstalled to keep you accountable to your focus goals.</string>
+    <string name="accessibility_service_description">Allows Ontime to block distracting apps during focus sessions and detect when you try to escape your commitment.</string>
+
+    <!-- Widget -->
+    <string name="widget_label">Ontime Focus</string>
+    <string name="widget_description">Shows today\'s focus time and streak on your home screen</string>
 </resources>

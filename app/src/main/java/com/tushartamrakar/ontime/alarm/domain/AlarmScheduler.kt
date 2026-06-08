@@ -18,114 +18,82 @@ class AlarmScheduler @Inject constructor(
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    // ─── Schedule alarm ───────────────────────────────────────────────────────
     fun schedule(alarm: AlarmEntity) {
         val repeatDays = parseRepeatDays(alarm.repeatDays)
-
-        if (repeatDays.isEmpty()) {
-            // One-time alarm
-            scheduleOneTime(alarm)
-        } else {
-            // Recurring alarm — schedule for each day
-            repeatDays.forEach { day ->
-                scheduleWeekly(alarm, day)
-            }
-        }
+        if (repeatDays.isEmpty()) scheduleOneTime(alarm)
+        else repeatDays.forEach { day -> scheduleWeekly(alarm, day) }
     }
 
-    // ─── Schedule one-time alarm ──────────────────────────────────────────────
     private fun scheduleOneTime(alarm: AlarmEntity) {
-        val triggerTime = getNextAlarmTime(alarm.hour, alarm.minute, -1)
-        val pendingIntent = createPendingIntent(alarm, 0)
-        setExactAlarm(triggerTime, pendingIntent)
+        setExactAlarm(getNextAlarmTime(alarm.hour, alarm.minute, -1), createPendingIntent(alarm, 0))
     }
 
-    // ─── Schedule weekly recurring alarm ─────────────────────────────────────
     private fun scheduleWeekly(alarm: AlarmEntity, dayOfWeek: Int) {
-        val triggerTime = getNextAlarmTime(alarm.hour, alarm.minute, dayOfWeek)
-        val pendingIntent = createPendingIntent(alarm, dayOfWeek)
-        setExactAlarm(triggerTime, pendingIntent)
+        setExactAlarm(getNextAlarmTime(alarm.hour, alarm.minute, dayOfWeek), createPendingIntent(alarm, dayOfWeek))
     }
 
-    // ─── Get next alarm time ──────────────────────────────────────────────────
     private fun getNextAlarmTime(hour: Int, minute: Int, dayOfWeek: Int): Long {
-        val calendar = Calendar.getInstance().apply {
+        return Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-
             if (dayOfWeek != -1) {
                 set(Calendar.DAY_OF_WEEK, dayOfWeek)
-                // If this day has already passed this week, schedule for next week
-                if (timeInMillis <= System.currentTimeMillis()) {
-                    add(Calendar.WEEK_OF_YEAR, 1)
-                }
+                if (timeInMillis <= System.currentTimeMillis()) add(Calendar.WEEK_OF_YEAR, 1)
             } else {
-                // One-time: if time passed today, schedule for tomorrow
-                if (timeInMillis <= System.currentTimeMillis()) {
-                    add(Calendar.DAY_OF_MONTH, 1)
-                }
+                if (timeInMillis <= System.currentTimeMillis()) add(Calendar.DAY_OF_MONTH, 1)
             }
-        }
-        return calendar.timeInMillis
+        }.timeInMillis
     }
 
-    // ─── Create PendingIntent ─────────────────────────────────────────────────
     private fun createPendingIntent(alarm: AlarmEntity, dayOfWeek: Int): PendingIntent {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("ALARM_ID", alarm.id)
             putExtra("ALARM_LABEL", alarm.label)
             putExtra("ALARM_VIBRATE", alarm.vibrate)
+            putExtra("ALARM_TASKS", alarm.tasks)
+            putExtra("ALARM_RISE_CHECK_MINUTES", alarm.riseCheckMinutes)
+            putExtra("ALARM_SOUND", alarm.sound)
+            putExtra("ALARM_VOLUME", alarm.volume)
+            putExtra("ALARM_GENTLE_WAKE_UP_SECONDS", alarm.gentleWakeUpSeconds)
+            putExtra("ALARM_TIME_ANNOUNCEMENT", alarm.timeAnnouncement)
+            putExtra("ALARM_ANNOUNCEMENT_VOICE", alarm.announcementVoice)
+            putExtra("ALARM_WEATHER_REMINDER", alarm.weatherReminder)
+            putExtra("ALARM_LABEL_REMINDER", alarm.labelReminder)
+            putExtra("ALARM_EXTRA_LOUD", alarm.extraLoud)
+            putExtra("ALARM_SNOOZE_ENABLED", alarm.snoozeEnabled)
+            putExtra("ALARM_SNOOZE_INTERVAL", alarm.snoozeIntervalMinutes)
+            putExtra("ALARM_SNOOZE_LIMIT", alarm.snoozeLimit)
+            putExtra("ALARM_SNOOZE_PROGRESSIVE", alarm.snoozeProgressiveMode)
+            putExtra("ALARM_SNOOZE_COUNT", 0)
         }
-
-        // Unique request code per alarm per day
-        val requestCode = alarm.id * 10 + dayOfWeek
-
         return PendingIntent.getBroadcast(
-            context,
-            requestCode,
-            intent,
+            context, alarm.id * 10 + dayOfWeek, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
 
-    // ─── Set exact alarm ──────────────────────────────────────────────────────
     private fun setExactAlarm(triggerTime: Long, pendingIntent: PendingIntent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent,
-                )
-            }
+            if (alarmManager.canScheduleExactAlarms())
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
         } else {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent,
-            )
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
         }
     }
 
-    // ─── Cancel alarm ─────────────────────────────────────────────────────────
     fun cancel(alarmId: Int) {
-        // Cancel for all possible days (0-7)
         for (day in 0..7) {
-            val intent = Intent(context, AlarmReceiver::class.java)
-            val requestCode = alarmId * 10 + day
             val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                intent,
+                context, alarmId * 10 + day,
+                Intent(context, AlarmReceiver::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             alarmManager.cancel(pendingIntent)
         }
     }
 
-    // ─── Parse repeat days ────────────────────────────────────────────────────
     private fun parseRepeatDays(repeatDays: String): List<Int> {
         if (repeatDays.isBlank()) return emptyList()
         return repeatDays.split(",").mapNotNull { it.trim().toIntOrNull() }
